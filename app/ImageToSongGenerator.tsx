@@ -61,7 +61,7 @@ const ImageToSongGenerator = () => {
 
   const pollDownloadStatus = async (songId: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/download?id=${songId}`);
+      const response = await fetch(`https://novel-gibbon-related.ngrok-free.app/download?id=${songId}`);
       const data = await response.json();
       if (data.ready) {
         setDownloadStatus({ ready: true, audio_url: data.audio_url });
@@ -93,7 +93,7 @@ const ImageToSongGenerator = () => {
     formData.append('metadata', JSON.stringify(metaData));
 
     try {
-      const response = await fetch('http://localhost:5000/upload', {
+      const response = await fetch('https://novel-gibbon-related.ngrok-free.app/upload', {
         method: 'POST',
         body: formData
       });
