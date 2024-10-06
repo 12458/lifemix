@@ -13,27 +13,38 @@ import GradualSpacing from "@/components/ui/gradual-spacing";
 
 
 const ImageToSongGenerator = () => {
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState<{ file: File; preview: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
+  interface Result {
+    title: string;
+    genre_tags: string[];
+    song_bpm: number;
+    language: string;
+    singer: string;
+    lyrics: string;
+    audio_url: string;
+  }
+  
+  const [result, setResult] = useState<Result | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [bpm, setBpm] = useState(120);
   const [currentTag, setCurrentTag] = useState('');
-  const [tags, setTags] = useState([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [language, setLanguage] = useState('en');
   const [singer, setSinger] = useState('random');
   const [downloadStatus, setDownloadStatus] = useState({ ready: false, audio_url: null });
 
-  const handleImageUpload = (event) => {
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return;
     const files = Array.from(event.target.files);
     const newImages = files.map(file => ({
-      file,
-      preview: URL.createObjectURL(file)
+      file: file as File,
+      preview: URL.createObjectURL(file as Blob)
     }));
     setImages(prevImages => [...prevImages, ...newImages]);
   };
 
-  const handleImageDelete = (index) => {
+  const handleImageDelete = (index: number) => {
     setImages(prevImages => prevImages.filter((_, i) => i !== index));
   };
 
@@ -44,11 +55,11 @@ const ImageToSongGenerator = () => {
     }
   };
 
-  const handleRemoveTag = (tagToRemove) => {
+  const handleRemoveTag = (tagToRemove: string) => {
     setTags(prevTags => prevTags.filter(tag => tag !== tagToRemove));
   };
 
-  const pollDownloadStatus = async (songId) => {
+  const pollDownloadStatus = async (songId: string) => {
     try {
       const response = await fetch(`http://localhost:5000/download?id=${songId}`);
       const data = await response.json();
@@ -102,7 +113,11 @@ const ImageToSongGenerator = () => {
       }, 10000); // Poll every 10 seconds
     } catch (error) {
       console.error('Error:', error);
-      setError(error.message);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -274,11 +289,10 @@ const ImageToSongGenerator = () => {
               <audio controls src={result.audio_url} className="w-full" />
             </div>
             <a
-              href={downloadStatus.audio_url}
+              href={downloadStatus.audio_url || undefined}
               download
-              disabled={!downloadStatus.ready}
               className={`mt-4 w-full py-2 flex items-center justify-center ${!downloadStatus.ready ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                } ${!downloadStatus.ready ? 'pointer-events-none' : ''}`}
             >
               <Button>
                 <Download className="mr-2" />
