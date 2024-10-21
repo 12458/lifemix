@@ -1,4 +1,4 @@
-# Divhacks: LifeMix
+# LifeMix
 
 ## Inspiration
 
